@@ -1,96 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>DHL Tracking</title>
-
-<style>
-body {
-    font-family: Arial;
-    background: #f5f5f5;
-    text-align: center;
-}
-
-.container {
-    background: white;
-    padding: 20px;
-    margin: 30px auto;
-    width: 90%;
-    max-width: 400px;
-    border-radius: 10px;
-}
-
-h2 {
-    color: #d40511;
-}
-
-.step {
-    display: flex;
-    align-items: center;
-    margin: 10px 0;
-}
-
-.circle {
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    border: 2px solid gray;
-    margin-right: 10px;
-}
-
-.done {
-    background: green;
-}
-
-.hold-box {
-    background: #ffe6e6;
-    padding: 15px;
-    margin-top: 15px;
-    border-radius: 8px;
-}
-
-button {
-    background: #d40511;
-    color: white;
-    padding: 10px;
-    border: none;
-    width: 100%;
-    margin-top: 10px;
-    border-radius: 5px;
-}
-</style>
-
+<title>Admin Panel</title>
 </head>
 
 <body>
 
-<div class="container">
-<h2>DHL Tracking</h2>
+<h2>Update Tracking</h2>
 
-<p><b>Status:</b> <span id="status"></span></p>
-<p><b>Location:</b> <span id="location"></span></p>
+<input id="status" placeholder="Status"><br><br>
+<input id="location" placeholder="Location"><br><br>
+<input id="progress" placeholder="Progress (1-4)"><br><br>
 
-<div class="step">
-<div id="c1" class="circle"></div> Shipment picked
-</div>
-
-<div class="step">
-<div id="c2" class="circle"></div> In transit
-</div>
-
-<div class="step">
-<div id="c3" class="circle"></div> Out for delivery
-</div>
-
-<div class="step">
-<div id="c4" class="circle"></div> Delivered
-</div>
-
-<div id="hold" class="hold-box" style="display:none;">
-<p>Your package is currently on hold. Kindly complete the required payment to continue delivery.</p>
-<button>Make Payment</button>
-</div>
-
-</div>
+<button onclick="update()">Update</button>
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
@@ -105,22 +27,13 @@ const firebaseConfig = {
 const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-db.collection("tracking").doc("123456").onSnapshot((doc) => {
-
-let data = doc.data();
-
-document.getElementById("status").innerText = data.status;
-document.getElementById("location").innerText = data.location;
-
-for(let i=1;i<=data.progress;i++){
-    document.getElementById("c"+i).classList.add("done");
+function update(){
+    db.collection("tracking").doc("123456").update({
+        status: document.getElementById("status").value,
+        location: document.getElementById("location").value,
+        progress: Number(document.getElementById("progress").value)
+    });
 }
-
-if(data.status == "On Hold"){
-    document.getElementById("hold").style.display = "block";
-}
-
-});
 </script>
 
 </body>
