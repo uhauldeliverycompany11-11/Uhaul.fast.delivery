@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    background:#000;
+    color:#fff;
+    font-family: Arial;
+    margin:0;
+    padding:15px;
+}
+
+h2 {
+    text-align:center;
+    color:#d46bff;
+}
+
+/* INPUT */
+input, button {
+    width:100%;
+    padding:14px;
+    margin-top:10px;
+    border-radius:10px;
+    border:none;
+}
+
+button {
+    background:linear-gradient(to right, purple, violet);
+    color:white;
+    font-weight:bold;
+}
+
+/* CARD */
+.card {
+    background:#111;
+    padding:15px;
+    margin-top:20px;
+    border-radius:12px;
+}
+
+/* TIMELINE */
+.timeline {
+    border-left:2px solid #444;
+    margin-left:15px;
+    padding-left:20px;
+}
+
+.step {
+    position:relative;
+    margin-bottom:20px;
+}
+
+.icon {
+    position:absolute;
+    left:-28px;
+    top:0;
+    font-size:14px;
+}
+
+/* COLORS */
+.done { color:#00bfff; }      /* blue check */
+.active { color:#00bfff; }    /* current */
+.pending { color:#777; }
+.hold { color:#ff4d4d; }
+
+.small {
+    color:#aaa;
+    font-size:13px;
+}
+
+/* WARNING */
+.warning {
+    margin-top:15px;
+    color:#ff4d4d;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Boy Alone Logistics</h2>
+
+<input id="trackInput" placeholder="Enter Tracking Number">
+<button onclick="track()">Track</button>
+
+<div id="result"></div>
+
+<script>
+function track() {
+    let code = document.getElementById("trackInput").value;
+    let data = JSON.parse(localStorage.getItem(code));
+
+    if (!data) {
+        document.getElementById("result").innerHTML = "No shipment found";
+        return;
+    }
+
+    let steps = ["Picked Up", "In Transit", "On Hold", "Out for Delivery"];
+    let currentIndex = steps.indexOf(data.status);
+
+    function getClass(i, name) {
+        if (data.status === "On Hold" && name === "On Hold") return "hold";
+        if (i < currentIndex) return "done";
+        if (i === currentIndex) return "active";
+        return "pending";
+    }
+
+    function getIcon(i) {
+        if (i < currentIndex) return "✔";  // blue check
+        if (i === currentIndex) return "●"; // current step
+        return "○"; // pending
+    }
+
+    let holdMessage = "";
+    if (data.status === "On Hold") {
+        holdMessage = `
+        <div class="warning">
+        ⚠ Your package is on hold due to clearance payment.<br>
+        Pay $${data.amount} to proceed with delivery.
+        </div>`;
+    }
+
+    let timelineHTML = "";
+
+    steps.forEach((step, i) => {
+        timelineHTML += `
+        <div class="step ${getClass(i, step)}">
+            <div class="icon">${getIcon(i)}</div>
+            <b>${step}</b><br>
+            <span class="small">${data.location}</span>
+        </div>`;
+    });
+
+    document.getElementById("result").innerHTML = `
+    <div class="card">
+        <h3>${code}</h3>
+
+        <p><b>From:</b> ${data.from}</p>
+        <p><b>To:</b> ${data.to}</p>
+
+        <div class="timeline">
+            ${timelineHTML}
+        </div>
+
+        <p><b>Current Location:</b> ${data.location}</p>
+        <p><b>Date:</b> ${new Date().toDateString()}</p>
+
+        ${holdMessage}
+    </div>
+    `;
+}
+</script>
+
+</body>
+</html>
