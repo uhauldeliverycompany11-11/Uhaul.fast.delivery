@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    background:#000;
+    color:#fff;
+    font-family:Arial;
+    padding:20px;
+}
+
+input, select, button {
+    width:100%;
+    padding:14px;
+    margin-top:10px;
+    border-radius:10px;
+    border:none;
+}
+
+button {
+    background:#444;
+    color:#fff;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Admin Panel</h2>
+
+<input id="code" placeholder="Tracking Number">
+<input id="from" placeholder="From">
+<input id="to" placeholder="To">
+<input id="location" placeholder="Current Location">
+
+<select id="status">
+<option>Picked Up</option>
+<option>In Transit</option>
+<option>On Hold</option>
+<option>Out for Delivery</option>
+</select>
+
+<input id="amount" placeholder="Amount (only for hold)">
+
+<button onclick="save()">Save</button>
+
+<script>
+function save() {
+    let code = document.getElementById("code").value;
+
+    let data = {
+        from: document.getElementById("from").value,
+        to: document.getElementById("to").value,
+        location: document.getElementById("location").value,
+        status: document.getElementById("status").value,
+        amount: document.getElementById("amount").value
+    };
+
+    localStorage.setItem(code, JSON.stringify(data));
+
+    alert("Saved Successfully!");
+}
+</script>
+
+</body>
+</html>
